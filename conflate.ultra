@@ -1,0 +1,38 @@
+---
+fitBounds: true
+server: https://maps.mail.ru/osm/tools/overpass/api
+type: overpass
+style:
+  layers:
+    - type: line
+    - type: circle
+      filter: [==, [geometry-type], Point]
+      circle-color:
+        - case
+        - [has, man_made]
+        - blue
+        - [get, match]
+        - green
+        - red
+transform: |
+  import { nearestPoint } from "https://esm.sh/@turf/nearest-point";
+  
+  const THRESHOLD = 0.1; // In kilometers
+
+  export default async (osmData) => {
+    const resp = await fetch("https://raw.githubusercontent.com/MapRVA/henrico-flock/trunk/henrico_flock_2025.geojson");
+    const henricoData = await resp.json();
+    
+    const result = { type: "FeatureCollection", features: [...osmData.features] };
+    for (const pt of henricoData.features) {
+      const nearest = nearestPoint(pt, osmData);
+      pt.properties.match = nearest.properties.distanceToPoint < THRESHOLD;
+      result.features.push(pt);
+    }
+    
+    return result;
+  };
+---
+area[wikidata=Q341639];
+node[man_made=surveillance]["surveillance:type"=ALPR](area._);
+out center;
