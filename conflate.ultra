@@ -1,6 +1,6 @@
 ---
 fitBounds: true
-server: https://maps.mail.ru/osm/tools/overpass/api
+server: https://overpass.maprva.org/api
 type: overpass
 style:
   layers:
